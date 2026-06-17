@@ -2,122 +2,340 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>ABC Pharmacy</title>
 	<style>
-		body        { font-family: Arial, sans-serif; margin: 20px; }
-		h1          { margin-bottom: 4px; }
-		h2          { margin-top: 30px; margin-bottom: 8px; }
-
-		/* Search bar */
-		#searchInput  { padding: 5px; width: 250px; margin-bottom: 12px; }
-		#searchStatus { margin-left: 10px; font-size: 13px; color: #555; }
-
-		/* Legend */
-		.legend      { margin-bottom: 8px; font-size: 14px; }
-		.box         { display: inline-block; width: 14px; height: 14px;
-					   border: 1px solid #999; vertical-align: middle; margin-right: 4px; }
-		.box-red     { background: #f8a0a0; }
-		.box-yellow  { background: #f8f0a0; }
-
-		/* Table */
-		table        { border-collapse: collapse; width: 100%; }
-		th, td       { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
-		th           { background: #eee; }
-
-		/* Row colour rules */
-		.row-red     { background: #f8a0a0; }
-		.row-yellow  { background: #f8f0a0; }
-
-		/* Add Medicine form */
-		.add-form           { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px;
-							  max-width: 500px; margin-top: 8px; }
-		.add-form label     { font-size: 13px; font-weight: bold; }
-		.add-form input,
-		.add-form textarea  { padding: 5px; width: 100%; box-sizing: border-box; }
-		.add-form .full     { grid-column: 1 / -1; }
-		.add-form button    { grid-column: 1 / -1; padding: 7px; cursor: pointer;
-							  background: #1a56db; color: white; border: none; font-size: 14px; }
-
-		#msg { margin-top: 8px; font-size: 14px; color: green; }
-
-		/* Toast notification */
-		#toast {
-			position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-			min-width: 280px; max-width: 480px; padding: 14px 20px;
-			border-radius: 6px; font-size: 14px; color: #fff;
-			box-shadow: 0 4px 12px rgba(0,0,0,.25);
-			opacity: 0; transition: opacity .35s ease;
-			pointer-events: none; z-index: 9999; text-align: center;
+		/* ── Base ─────────────────────────────────────────────── */
+		:root {
+			--bg:          #f4f6fb;
+			--surface:     #ffffff;
+			--text:        #1f2937;
+			--muted:       #6b7280;
+			--border:      #e5e7eb;
+			--primary:     #1a56db;
+			--primary-700: #1747b8;
+			--success:     #2e7d32;
+			--danger:      #c62828;
+			--warn-bg:     #fff7d6;
+			--warn-bar:    #d4a017;
+			--alert-bg:    #fde2e2;
+			--alert-bar:   #c62828;
+			--shadow:      0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.06);
+			--radius:      10px;
 		}
-		#toast.show        { opacity: 1; pointer-events: auto; }
-		#toast.toast-success { background: #2e7d32; }
-		#toast.toast-error   { background: #c62828; }
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+						 "Helvetica Neue", Arial, sans-serif;
+			font-size: 14px;
+			line-height: 1.5;
+		}
+
+		.app-header {
+			background: var(--surface);
+			border-bottom: 1px solid var(--border);
+			padding: 18px 32px;
+		}
+		.app-header h1 {
+			margin: 0;
+			font-size: 22px;
+			font-weight: 600;
+			color: var(--primary);
+			letter-spacing: .2px;
+		}
+		.app-header .subtitle {
+			margin: 2px 0 0;
+			font-size: 13px;
+			color: var(--muted);
+		}
+
+		main {
+			max-width: 1100px;
+			margin: 24px auto;
+			padding: 0 24px 60px;
+		}
+
+		.card {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			box-shadow: var(--shadow);
+			padding: 20px 24px;
+			margin-bottom: 24px;
+		}
+
+		.card h2 {
+			margin: 0 0 14px;
+			font-size: 16px;
+			font-weight: 600;
+			color: var(--text);
+		}
+
+		/* ── Search bar ───────────────────────────────────────── */
+		.toolbar {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			flex-wrap: wrap;
+			margin-bottom: 14px;
+		}
+		#searchInput {
+			flex: 0 0 280px;
+			padding: 8px 12px;
+			font-size: 14px;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			background: #fff;
+			transition: border-color .15s, box-shadow .15s;
+		}
+		#searchInput:focus {
+			outline: none;
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px rgba(26,86,219,.15);
+		}
+		#searchStatus {
+			font-size: 13px;
+			color: var(--muted);
+		}
+
+		/* ── Legend ───────────────────────────────────────────── */
+		.legend {
+			margin-bottom: 12px;
+			font-size: 13px;
+			color: var(--muted);
+			display: flex;
+			gap: 18px;
+			flex-wrap: wrap;
+		}
+		.legend span.item {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+		}
+		.box {
+			display: inline-block;
+			width: 12px;
+			height: 12px;
+			border-radius: 3px;
+		}
+		.box-red    { background: var(--alert-bar); }
+		.box-yellow { background: var(--warn-bar); }
+
+		/* ── Table ────────────────────────────────────────────── */
+		.table-wrap {
+			overflow-x: auto;
+			border: 1px solid var(--border);
+			border-radius: 8px;
+		}
+		table {
+			border-collapse: collapse;
+			width: 100%;
+			background: #fff;
+		}
+		th, td {
+			padding: 10px 14px;
+			text-align: left;
+			border-bottom: 1px solid var(--border);
+			font-size: 14px;
+		}
+		th {
+			background: #f9fafb;
+			font-weight: 600;
+			color: var(--muted);
+			text-transform: uppercase;
+			font-size: 12px;
+			letter-spacing: .4px;
+		}
+		tbody tr { transition: background .12s; }
+		tbody tr:hover { background: #f5f7fb; }
+		tbody tr:last-child td { border-bottom: none; }
+
+		/* Row highlight rules — soft bg + left accent bar */
+		.row-red    { background: var(--alert-bg) !important; box-shadow: inset 3px 0 0 var(--alert-bar); }
+		.row-yellow { background: var(--warn-bg)  !important; box-shadow: inset 3px 0 0 var(--warn-bar); }
+
+		/* Sell button inside the table */
+		tbody button {
+			padding: 5px 12px;
+			font-size: 13px;
+			border: 1px solid var(--primary);
+			background: #fff;
+			color: var(--primary);
+			border-radius: 5px;
+			cursor: pointer;
+			transition: background .15s, color .15s;
+		}
+		tbody button:hover { background: var(--primary); color: #fff; }
+
+		/* ── Add Medicine form ───────────────────────────────── */
+		.add-form {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 14px 18px;
+			max-width: 640px;
+		}
+		.add-form label {
+			display: block;
+			font-size: 12px;
+			font-weight: 600;
+			color: var(--muted);
+			text-transform: uppercase;
+			letter-spacing: .4px;
+			margin-bottom: 4px;
+		}
+		.add-form input,
+		.add-form textarea {
+			width: 100%;
+			padding: 8px 10px;
+			font-size: 14px;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			background: #fff;
+			transition: border-color .15s, box-shadow .15s;
+		}
+		.add-form input:focus,
+		.add-form textarea:focus {
+			outline: none;
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px rgba(26,86,219,.15);
+		}
+		.add-form .full { grid-column: 1 / -1; }
+		.add-form button {
+			grid-column: 1 / -1;
+			padding: 10px;
+			cursor: pointer;
+			background: var(--primary);
+			color: #fff;
+			border: none;
+			border-radius: 6px;
+			font-size: 14px;
+			font-weight: 600;
+			transition: background .15s;
+		}
+		.add-form button:hover { background: var(--primary-700); }
+
+		#msg { margin-top: 8px; font-size: 13px; color: var(--success); }
+
+		/* ── Toast notification ──────────────────────────────── */
+		#toast {
+			position: fixed;
+			bottom: 28px;
+			left: 50%;
+			transform: translate(-50%, 8px);
+			min-width: 280px;
+			max-width: 480px;
+			padding: 12px 18px;
+			border-radius: 8px;
+			font-size: 14px;
+			color: #fff;
+			box-shadow: 0 6px 20px rgba(0,0,0,.18);
+			opacity: 0;
+			transition: opacity .25s ease, transform .25s ease;
+			pointer-events: none;
+			z-index: 9999;
+			text-align: center;
+		}
+		#toast.show {
+			opacity: 1;
+			transform: translate(-50%, 0);
+			pointer-events: auto;
+		}
+		#toast.toast-success { background: var(--success); }
+		#toast.toast-error   { background: var(--danger); }
+
+		/* ── Small screens ───────────────────────────────────── */
+		@media (max-width: 600px) {
+			.add-form { grid-template-columns: 1fr; }
+			.app-header { padding: 14px 18px; }
+			main { padding: 0 14px 40px; }
+			#searchInput { flex: 1 1 100%; }
+		}
 	</style>
 </head>
 <body>
 
-<h1>ABC Pharmacy</h1>
+<header class="app-header">
+	<h1>ABC Pharmacy</h1>
+	<p class="subtitle">Inventory & sales</p>
+</header>
 
-<!-- ── Medicine List ─────────────────────────────── -->
-<h2>Medicine List</h2>
+<main>
 
-<input type="text" id="searchInput" placeholder="Search by name..." oninput="searchMedicines()" />
-<span id="searchStatus"></span>
+	<!-- ── Medicine List ─────────────────────────────── -->
+	<section class="card">
+		<h2>Medicine List</h2>
 
-<div class="legend">
-	<span class="box box-red"></span> Expiry within 30 days &#160;&#160;
-	<span class="box box-yellow"></span> Stock less than 10
-</div>
+		<div class="toolbar">
+			<input type="text" id="searchInput" placeholder="Search by name..." oninput="searchMedicines()" />
+			<span id="searchStatus"></span>
+		</div>
 
-<table>
-	<thead>
-		<tr>
-			<th>#</th>
-			<th>Name</th>
-			<th>Brand</th>
-			<th>Price</th>
-			<th>Quantity</th>
-			<th>Expiry Date</th>
-			<th>Sell</th>
-		</tr>
-	</thead>
-	<tbody id="medicineTableBody">
-		<tr><td colspan="7">Loading...</td></tr>
-	</tbody>
-</table>
+		<div class="legend">
+			<span class="item"><span class="box box-red"></span> Expiry within 30 days</span>
+			<span class="item"><span class="box box-yellow"></span> Stock less than 10</span>
+		</div>
 
-<!-- ── Add Medicine ──────────────────────────────── -->
-<h2>Add Medicine</h2>
+		<div class="table-wrap">
+			<table>
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Name</th>
+						<th>Brand</th>
+						<th>Price</th>
+						<th>Quantity</th>
+						<th>Expiry Date</th>
+						<th>Sell</th>
+					</tr>
+				</thead>
+				<tbody id="medicineTableBody">
+					<tr><td colspan="7">Loading...</td></tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
 
-<form class="add-form" onsubmit="addMedicine(event)">
-	<div>
-		<label>Name *</label>
-		<input type="text" id="add_fullName" required="required" placeholder="e.g. Paracetamol 500mg" />
-	</div>
-	<div>
-		<label>Brand *</label>
-		<input type="text" id="add_brand" required="required" placeholder="e.g. Cipla" />
-	</div>
-	<div>
-		<label>Price *</label>
-		<input type="number" id="add_price" required="required" min="0" step="0.01" placeholder="0.00" />
-	</div>
-	<div>
-		<label>Quantity *</label>
-		<input type="number" id="add_quantity" required="required" min="0" placeholder="0" />
-	</div>
-	<div>
-		<label>Expiry Date *</label>
-		<input type="date" id="add_expiryDate" required="required" />
-	</div>
-	<div>
-		<label>Notes *</label>
-		<input type="text" id="add_notes" required="required" placeholder="e.g. Store below 25°C" />
-	</div>
-	<button type="submit">Add Medicine</button>
-</form>
+	<!-- ── Add Medicine ──────────────────────────────── -->
+	<section class="card">
+		<h2>Add Medicine</h2>
 
-<p id="msg"></p>
+		<form class="add-form" onsubmit="addMedicine(event)">
+			<div>
+				<label>Name *</label>
+				<input type="text" id="add_fullName" required="required" placeholder="e.g. Paracetamol 500mg" />
+			</div>
+			<div>
+				<label>Brand *</label>
+				<input type="text" id="add_brand" required="required" placeholder="e.g. Cipla" />
+			</div>
+			<div>
+				<label>Price *</label>
+				<input type="number" id="add_price" required="required" min="0" step="0.01" placeholder="0.00" />
+			</div>
+			<div>
+				<label>Quantity *</label>
+				<input type="number" id="add_quantity" required="required" min="0" placeholder="0" />
+			</div>
+			<div>
+				<label>Expiry Date *</label>
+				<input type="date" id="add_expiryDate" required="required" />
+			</div>
+			<div>
+				<label>Notes *</label>
+				<input type="text" id="add_notes" required="required" placeholder="e.g. Store below 25°C" />
+			</div>
+			<button type="submit">Add Medicine</button>
+		</form>
+
+		<p id="msg"></p>
+	</section>
+
+</main>
 
 <div id="toast" role="alert" aria-live="assertive"></div>
 

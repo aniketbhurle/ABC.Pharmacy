@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>ABC Pharmacy - Sample Preview</title>
+	<style>
+		body        { font-family: Arial, sans-serif; margin: 20px; }
+		h1          { margin-bottom: 4px; }
+		h2          { margin-top: 30px; margin-bottom: 8px; }
+
+		.note       { background: #fff8dc; border: 1px solid #e0c040;
+					  padding: 8px 12px; font-size: 13px; margin-bottom: 16px; }
+
+		/* Search bar */
+		#searchInput { padding: 5px; width: 250px; margin-bottom: 12px; }
+
+		/* Legend */
+		.legend      { margin-bottom: 8px; font-size: 14px; }
+		.box         { display: inline-block; width: 14px; height: 14px;
+					   border: 1px solid #999; vertical-align: middle; margin-right: 4px; }
+		.box-red     { background: #f8a0a0; }
+		.box-yellow  { background: #f8f0a0; }
+
+		/* Table */
+		table        { border-collapse: collapse; width: 100%; }
+		th, td       { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+		th           { background: #eee; }
+
+		/* Row colour rules */
+		.row-red     { background: #f8a0a0; }
+		.row-yellow  { background: #f8f0a0; }
+
+		/* Add Medicine form */
+		.add-form           { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px;
+							  max-width: 500px; margin-top: 8px; }
+		.add-form label     { font-size: 13px; font-weight: bold; }
+		.add-form input     { padding: 5px; width: 100%; box-sizing: border-box; }
+		.add-form .full     { grid-column: 1 / -1; }
+		.add-form button    { grid-column: 1 / -1; padding: 7px; cursor: pointer;
+							  background: #1a56db; color: white; border: none; font-size: 14px; }
+
+		#msg { margin-top: 8px; font-size: 14px; color: green; }
+	</style>
+</head>
+<body>
+
+<h1>ABC Pharmacy</h1>
+
+<div class="note">
+	&#9432; This is a <strong>sample preview</strong> with mock data — no API needed.
+	The real app at <code>index.html</code> loads live data from the API.
+</div>
+
+<!-- ── Medicine List ───────────────────────────────────────── -->
+<h2>Medicine List</h2>
+
+<input type="text" id="searchInput" placeholder="Search by name..." oninput="searchMedicines()" />
+
+<div class="legend">
+	<span class="box box-red"></span> Expiry within 30 days &nbsp;&nbsp;
+	<span class="box box-yellow"></span> Stock less than 10
+</div>
+
+<table>
+	<thead>
+		<tr>
+			<th>#</th>
+			<th>Name</th>
+			<th>Brand</th>
+			<th>Price</th>
+			<th>Quantity</th>
+			<th>Expiry Date</th>
+			<th>Sell</th>
+		</tr>
+	</thead>
+	<tbody id="medicineTableBody"></tbody>
+</table>
+
+<!-- ── Add Medicine ────────────────────────────────────────── -->
+<h2>Add Medicine</h2>
+
+<form class="add-form" onsubmit="addMedicine(event)">
+	<div>
+		<label>Name *</label>
+		<input type="text" id="add_fullName" required placeholder="e.g. Paracetamol 500mg" />
+	</div>
+	<div>
+		<label>Brand *</label>
+		<input type="text" id="add_brand" required placeholder="e.g. Cipla" />
+	</div>
+	<div>
+		<label>Price *</label>
+		<input type="number" id="add_price" required min="0" step="0.01" placeholder="0.00" />
+	</div>
+	<div>
+		<label>Quantity *</label>
+		<input type="number" id="add_quantity" required min="0" placeholder="0" />
+	</div>
+	<div>
+		<label>Expiry Date *</label>
+		<input type="date" id="add_expiryDate" required />
+	</div>
+	<div>
+		<label>Notes *</label>
+		<input type="text" id="add_notes" required placeholder="e.g. Store below 25°C" />
+	</div>
+	<button type="submit">Add Medicine</button>
+</form>
+
+<p id="msg"></p>
+
+<script>
+	// ── Mock data (dates are calculated relative to today) ──────
+	function daysFromToday(n) {
+		var d = new Date();
+		d.setHours(0, 0, 0, 0);
+		d.setDate(d.getDate() + n);
+		return d;
+	}
+
+	var medicines = [
+		{ id: '1', fullName: 'Paracetamol 500mg',  brand: 'Cipla',      price: 2.50,  quantity: 120, expiryDate: daysFromToday(180) },
+		{ id: '2', fullName: 'Amoxicillin 250mg',  brand: 'Sun Pharma', price: 8.75,  quantity: 7,   expiryDate: daysFromToday(200) },
+		{ id: '3', fullName: 'Ibuprofen 400mg',    brand: 'Abbott',     price: 4.20,  quantity: 55,  expiryDate: daysFromToday(18)  },
+		{ id: '4', fullName: 'Cetirizine 10mg',    brand: 'Mankind',    price: 1.99,  quantity: 3,   expiryDate: daysFromToday(12)  },
+		{ id: '5', fullName: 'Metformin 500mg',    brand: 'USV',        price: 5.60,  quantity: 90,  expiryDate: daysFromToday(365) },
+		{ id: '6', fullName: 'Atorvastatin 10mg',  brand: 'Zydus',      price: 12.40, quantity: 6,   expiryDate: daysFromToday(300) },
+		{ id: '7', fullName: 'Azithromycin 500mg', brand: 'Cipla',      price: 15.00, quantity: 25,  expiryDate: daysFromToday(25)  },
+		{ id: '8', fullName: 'Omeprazole 20mg',    brand: 'Lupin',      price: 3.30,  quantity: 200, expiryDate: daysFromToday(500) }
+	];
+
+	// ── Render table ────────────────────────────────────────────
+	function renderTable(list) {
+		var tbody = document.getElementById('medicineTableBody');
+		var today = new Date();
+		today.setHours(0, 0, 0, 0);
+		var in30 = new Date(today);
+		in30.setDate(today.getDate() + 30);
+
+		if (!list || list.length === 0) {
+			tbody.innerHTML = '<tr><td colspan="7">No medicines found.</td></tr>';
+			return;
+		}
+
+		tbody.innerHTML = '';
+		list.forEach(function (med, i) {
+			var expiry     = new Date(med.expiryDate);
+			var expirySoon = expiry <= in30;
+			var lowStock   = med.quantity < 10;
+			var rowClass   = expirySoon ? 'row-red' : (lowStock ? 'row-yellow' : '');
+
+			var tr = document.createElement('tr');
+			tr.className = rowClass;
+			tr.innerHTML =
+				'<td>' + (i + 1) + '</td>' +
+				'<td>' + med.fullName + '</td>' +
+				'<td>' + med.brand + '</td>' +
+				'<td>$' + med.price.toFixed(2) + '</td>' +
+				'<td>' + med.quantity + '</td>' +
+				'<td>' + expiry.toLocaleDateString() + '</td>' +
+				'<td><button onclick="sellMedicine(\'' + med.id + '\', \'' + med.fullName + '\')">Sell</button></td>';
+			tbody.appendChild(tr);
+		});
+	}
+
+	// ── Search (filters local array) ────────────────────────────
+	function searchMedicines() {
+		var term = document.getElementById('searchInput').value.trim().toLowerCase();
+		if (term === '') {
+			renderTable(medicines);
+			return;
+		}
+		renderTable(medicines.filter(function (m) {
+			return m.fullName.toLowerCase().indexOf(term) !== -1;
+		}));
+	}
+
+	// ── Add Medicine (appends to local array) ───────────────────
+	function addMedicine(e) {
+		e.preventDefault();
+		medicines.push({
+			id:         String(Date.now()),
+			fullName:   document.getElementById('add_fullName').value,
+			brand:      document.getElementById('add_brand').value,
+			price:      parseFloat(document.getElementById('add_price').value),
+			quantity:   parseInt(document.getElementById('add_quantity').value),
+			expiryDate: new Date(document.getElementById('add_expiryDate').value)
+		});
+		document.getElementById('msg').style.color = 'green';
+		document.getElementById('msg').textContent = 'Medicine added. (demo only – not persisted)';
+		e.target.reset();
+		renderTable(medicines);
+	}
+
+	// ── Sell (browser prompt, deducts from local array) ─────────
+	function sellMedicine(id, name) {
+		var qty = prompt('Enter quantity to sell for: ' + name);
+		if (qty === null || qty === '') return;
+		var med = medicines.find(function (m) { return m.id === id; });
+		if (med) {
+			if (parseInt(qty) > med.quantity) {
+				alert('Not enough stock!');
+				return;
+			}
+			med.quantity -= parseInt(qty);
+		}
+		document.getElementById('msg').style.color = 'green';
+		document.getElementById('msg').textContent = 'Sale recorded. (demo only – not persisted)';
+		renderTable(medicines);
+	}
+
+	// Initial render on page load
+	renderTable(medicines);
+</script>
+
+</body>
+</html>

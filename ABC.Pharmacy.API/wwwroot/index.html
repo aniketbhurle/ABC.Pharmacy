@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>ABC Pharmacy</title>
+	<style>
+		body        { font-family: Arial, sans-serif; margin: 20px; }
+		h1          { margin-bottom: 4px; }
+		h2          { margin-top: 30px; margin-bottom: 8px; }
+
+		/* Search bar */
+		#searchInput { padding: 5px; width: 250px; margin-bottom: 12px; }
+
+		/* Legend */
+		.legend      { margin-bottom: 8px; font-size: 14px; }
+		.box         { display: inline-block; width: 14px; height: 14px;
+					   border: 1px solid #999; vertical-align: middle; margin-right: 4px; }
+		.box-red     { background: #f8a0a0; }
+		.box-yellow  { background: #f8f0a0; }
+
+		/* Table */
+		table        { border-collapse: collapse; width: 100%; }
+		th, td       { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+		th           { background: #eee; }
+
+		/* Row colour rules */
+		.row-red     { background: #f8a0a0; }
+		.row-yellow  { background: #f8f0a0; }
+
+		/* Add Medicine form */
+		.add-form           { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px;
+							  max-width: 500px; margin-top: 8px; }
+		.add-form label     { font-size: 13px; font-weight: bold; }
+		.add-form input,
+		.add-form textarea  { padding: 5px; width: 100%; box-sizing: border-box; }
+		.add-form .full     { grid-column: 1 / -1; }
+		.add-form button    { grid-column: 1 / -1; padding: 7px; cursor: pointer;
+							  background: #1a56db; color: white; border: none; font-size: 14px; }
+
+		#msg { margin-top: 8px; font-size: 14px; color: green; }
+	</style>
+</head>
+<body>
+
+<h1>ABC Pharmacy</h1>
+
+<!-- ── Medicine List ─────────────────────────────── -->
+<h2>Medicine List</h2>
+
+<input type="text" id="searchInput" placeholder="Search by name..." oninput="searchMedicines()" />
+
+<div class="legend">
+	<span class="box box-red"></span> Expiry within 30 days &#160;&#160;
+	<span class="box box-yellow"></span> Stock less than 10
+</div>
+
+<table>
+	<thead>
+		<tr>
+			<th>#</th>
+			<th>Name</th>
+			<th>Brand</th>
+			<th>Price</th>
+			<th>Quantity</th>
+			<th>Expiry Date</th>
+			<th>Sell</th>
+		</tr>
+	</thead>
+	<tbody id="medicineTableBody">
+		<tr><td colspan="7">Loading...</td></tr>
+	</tbody>
+</table>
+
+<!-- ── Add Medicine ──────────────────────────────── -->
+<h2>Add Medicine</h2>
+
+<form class="add-form" onsubmit="addMedicine(event)">
+	<div>
+		<label>Name *</label>
+		<input type="text" id="add_fullName" required="required" placeholder="e.g. Paracetamol 500mg" />
+	</div>
+	<div>
+		<label>Brand *</label>
+		<input type="text" id="add_brand" required="required" placeholder="e.g. Cipla" />
+	</div>
+	<div>
+		<label>Price *</label>
+		<input type="number" id="add_price" required="required" min="0" step="0.01" placeholder="0.00" />
+	</div>
+	<div>
+		<label>Quantity *</label>
+		<input type="number" id="add_quantity" required="required" min="0" placeholder="0" />
+	</div>
+	<div>
+		<label>Expiry Date *</label>
+		<input type="date" id="add_expiryDate" required="required" />
+	</div>
+	<div>
+		<label>Notes *</label>
+		<input type="text" id="add_notes" required="required" placeholder="e.g. Store below 25°C" />
+	</div>
+	<button type="submit">Add Medicine</button>
+</form>
+
+<p id="msg"></p>
+
+<script src="app.js"></script>
+
+</body>
+</html>

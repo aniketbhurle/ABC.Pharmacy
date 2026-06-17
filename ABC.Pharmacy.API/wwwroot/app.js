@@ -1,15 +1,49 @@
 const API = '/api/medicines';
 
-// Load list on page load
+// ── Notification toast ───────────────────────────────────────────────────────
+let _toastTimer = null;
+
+function showNotification(message, type /* 'success' | 'error' */ = 'error') {
+	const toast = document.getElementById('toast');
+	toast.textContent = message;
+	toast.className   = 'show toast-' + type;
+
+	if (_toastTimer) clearTimeout(_toastTimer);
+	_toastTimer = setTimeout(function () {
+		toast.className = '';
+	}, 4000);
+}
+
+// Extract a human-readable error message from a failed Response
+async function getErrorMessage(res) {
+	try {
+		const data = await res.json();
+		return data.error || data.title || JSON.stringify(data);
+	} catch {
+		return 'Request failed (' + res.status + ' ' + res.statusText + ')';
+	}
+}
+
+// ── Load list on page load ────────────────────────────────────────────────────
 window.onload = function () {
 	loadMedicines();
 };
 
 // Fetch all medicines and render table
 async function loadMedicines() {
-	const res  = await fetch(API + '/all');
-	const list = await res.json();
-	renderTable(list);
+	try {
+		const res  = await fetch(API + '/all');
+		if (!res.ok) {
+			const msg = await getErrorMessage(res);
+			showNotification('Failed to load medicines: ' + msg);
+			return;
+		}
+		const list = await res.json();
+		renderTable(list);
+	} catch (err) {
+		showNotification('Network error while loading medicines. Please check your connection.');
+		console.error(err);
+	}
 }
 
 // Search by name
@@ -19,9 +53,19 @@ async function searchMedicines() {
 		loadMedicines();
 		return;
 	}
-	const res  = await fetch(API + '/search?term=' + encodeURIComponent(term));
-	const list = await res.json();
-	renderTable(list);
+	try {
+		const res  = await fetch(API + '/search?term=' + encodeURIComponent(term));
+		if (!res.ok) {
+			const msg = await getErrorMessage(res);
+			showNotification('Search failed: ' + msg);
+			return;
+		}
+		const list = await res.json();
+		renderTable(list);
+	} catch (err) {
+		showNotification('Network error while searching. Please check your connection.');
+		console.error(err);
+	}
 }
 
 // Build table rows
@@ -69,18 +113,24 @@ async function addMedicine(e) {
 		expiryDate: document.getElementById('add_expiryDate').value,
 		notes:      document.getElementById('add_notes').value
 	};
-	const res = await fetch(API + '/add', {
-		method:  'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body:    JSON.stringify(payload)
-	});
-	if (res.ok) {
-		document.getElementById('msg').textContent = 'Medicine added successfully.';
-		e.target.reset();
-		loadMedicines();
-	} else {
-		document.getElementById('msg').style.color = 'red';
-		document.getElementById('msg').textContent = 'Failed to add medicine.';
+	try {
+		const res = await fetch(API + '/add', {
+			method:  'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body:    JSON.stringify(payload)
+		});
+		if (res.ok) {
+			showNotification('Medicine added successfully.', 'success');
+			document.getElementById('msg').textContent = '';
+			e.target.reset();
+			loadMedicines();
+		} else {
+			const msg = await getErrorMessage(res);
+			showNotification('Failed to add medicine: ' + msg);
+		}
+	} catch (err) {
+		showNotification('Network error while adding medicine. Please check your connection.');
+		console.error(err);
 	}
 }
 
@@ -88,14 +138,28 @@ async function addMedicine(e) {
 async function sellMedicine(id, name) {
 	const qty = prompt('Enter quantity to sell for: ' + name);
 	if (qty === null || qty === '') return;
-	const res = await fetch(API + '/sell', {
-		method:  'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body:    JSON.stringify({ medicineId: id, quantity: parseInt(qty) })
-	});
-	if (res.ok) {
-		loadMedicines();
-	} else {
-		alert('Sale failed. Please try again.');
+
+	const quantity = parseInt(qty);
+	if (isNaN(quantity) || quantity <= 0) {
+		showNotification('Please enter a valid positive quantity.');
+		return;
+	}
+
+	try {
+		const res = await fetch(API + '/sell', {
+			method:  'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body:    JSON.stringify({ medicineId: id, quantity: quantity })
+		});
+		if (res.ok) {
+			showNotification('Sale recorded successfully.', 'success');
+			loadMedicines();
+		} else {
+			const msg = await getErrorMessage(res);
+			showNotification('Sale failed: ' + msg);
+		}
+	} catch (err) {
+		showNotification('Network error while processing sale. Please check your connection.');
+		console.error(err);
 	}
 }

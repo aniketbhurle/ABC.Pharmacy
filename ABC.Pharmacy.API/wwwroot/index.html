@@ -38,6 +38,19 @@
 							  background: #1a56db; color: white; border: none; font-size: 14px; }
 
 		#msg { margin-top: 8px; font-size: 14px; color: green; }
+
+		/* Toast notification */
+		#toast {
+			position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+			min-width: 280px; max-width: 480px; padding: 14px 20px;
+			border-radius: 6px; font-size: 14px; color: #fff;
+			box-shadow: 0 4px 12px rgba(0,0,0,.25);
+			opacity: 0; transition: opacity .35s ease;
+			pointer-events: none; z-index: 9999; text-align: center;
+		}
+		#toast.show        { opacity: 1; pointer-events: auto; }
+		#toast.toast-success { background: #2e7d32; }
+		#toast.toast-error   { background: #c62828; }
 	</style>
 </head>
 <body>
@@ -103,6 +116,8 @@
 </form>
 
 <p id="msg"></p>
+
+<div id="toast" role="alert" aria-live="assertive"></div>
 
 <script src="app.js"></script>
 

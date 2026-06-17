@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json;
 
 namespace ABC.Pharmacy.API.Middleware;
@@ -23,6 +22,10 @@ public class ExceptionHandlingMiddleware
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Unhandled exception for {Method} {Path}", context.Request.Method, context.Request.Path);
+
+			context.Response.ContentType = "application/json";
+			context.Response.StatusCode  = 500;
+			await context.Response.WriteAsync(JsonSerializer.Serialize(new { error = ex.Message }));
 		}
 	}
 }

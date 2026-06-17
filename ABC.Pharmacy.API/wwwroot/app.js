@@ -46,23 +46,46 @@ async function loadMedicines() {
 	}
 }
 
-// Search by name
-async function searchMedicines() {
-	const term = document.getElementById('searchInput').value.trim();
+// Search by name — debounced + race-safe via AbortController
+let _searchTimer  = null;
+let _searchAbort  = null;
+
+function searchMedicines() {
+	// Debounce: wait until the user pauses typing before hitting the server
+	if (_searchTimer) clearTimeout(_searchTimer);
+	_searchTimer = setTimeout(runSearch, 300);
+}
+
+async function runSearch() {
+	const term      = document.getElementById('searchInput').value.trim();
+	const statusEl  = document.getElementById('searchStatus');
+
+	// Cancel any in-flight previous search so its response can't overwrite this one
+	if (_searchAbort) _searchAbort.abort();
+
 	if (term === '') {
+		statusEl.textContent = '';
 		loadMedicines();
 		return;
 	}
+
+	_searchAbort = new AbortController();
+	statusEl.textContent = 'Searching for "' + term + '"…';
+
 	try {
-		const res  = await fetch(API + '/search?term=' + encodeURIComponent(term));
+		const res = await fetch(API + '/search?term=' + encodeURIComponent(term), { signal: _searchAbort.signal });
 		if (!res.ok) {
 			const msg = await getErrorMessage(res);
+			statusEl.textContent = '';
 			showNotification('Search failed: ' + msg);
 			return;
 		}
 		const list = await res.json();
+		statusEl.textContent = 'Found ' + list.length + ' result(s) for "' + term + '".';
 		renderTable(list);
 	} catch (err) {
+		if (err.name === 'AbortError') return; // expected when a newer search supersedes this one
+		statusEl.textContent = '';
 		showNotification('Network error while searching. Please check your connection.');
 		console.error(err);
 	}

@@ -117,7 +117,7 @@ function renderTable(list) {
 			'<td>' + (i + 1) + '</td>' +
 			'<td>' + med.fullName + '</td>' +
 			'<td>' + med.brand + '</td>' +
-			'<td>$' + Number(med.price).toFixed(2) + '</td>' +
+			'<td>&#8377;' + Number(med.price).toFixed(2) + '</td>' +
 			'<td>' + med.quantity + '</td>' +
 			'<td>' + expiry.toLocaleDateString() + '</td>' +
 			'<td><button onclick="sellMedicine(\'' + med.id + '\', \'' + med.fullName + '\')">Sell</button></td>';

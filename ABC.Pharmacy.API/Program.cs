@@ -1,6 +1,7 @@
 using ABC.Pharmacy.Application.Interfaces;
 using ABC.Pharmacy.Application.Services;
 using ABC.Pharmacy.Infrastructure.Repositories;
+using ABC.Pharmacy.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,8 @@ builder.Services.AddScoped<IMedicineRepository, MedicineRepository>();
 builder.Services.AddScoped<IMedicineService, MedicineService>();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 
 // Configure the HTTP request pipeline.

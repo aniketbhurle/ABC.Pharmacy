@@ -8,5 +8,5 @@ public interface IMedicineService
     Task<List<Medicine>> GetAllMedicinesAsync();
     Task AddMedicineAsync(MedicineDto medicine);
     Task UpdateMedicineStockAsync(Guid medicineId, int quantity);
-    Task<List<Medicine>> SearchMedicineAsync(string searchTerm);
+    Task<List<Medicine>> SearchMedicinesAsync(string searchTerm);
 }

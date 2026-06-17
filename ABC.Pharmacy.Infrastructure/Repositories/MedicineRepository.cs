@@ -8,17 +8,20 @@ public class MedicineRepository : IMedicineRepository
     private readonly string _filePath;
     public MedicineRepository()
     {
-        _filePath = "Data/medicine.json";
+		_filePath = "Data/medicine.json";
 
-        var directory = Path.GetDirectoryName(_filePath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+		try
         {
-            Directory.CreateDirectory(directory);
+            var directory = Path.GetDirectoryName(_filePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            if (!File.Exists(_filePath))
+                File.WriteAllText(_filePath, "[]");
         }
-
-        if (!File.Exists(_filePath))
+        catch (Exception ex)
         {
-            File.WriteAllText(_filePath, "[]");
+            throw new InvalidOperationException($"Failed to initialise medicine file at '{_filePath}'.", ex);
         }
     }
 
@@ -58,15 +61,12 @@ public class MedicineRepository : IMedicineRepository
             var medicines = await GetAllAsync();
             var index = medicines.FindIndex(x => x.Id == medicine.Id);
 
-            if (index == -1)
-                throw new KeyNotFoundException($"Medicine {medicine.Id} not found");
-
             medicines[index] = medicine;
             await SaveAsync(medicines);
         }
         catch (Exception ex)
         {
-            throw new Exception("Failed to update new data", ex);
+            throw new Exception("Failed to update medicine data.", ex);
         }
     }
 

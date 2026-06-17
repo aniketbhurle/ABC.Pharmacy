@@ -14,16 +14,16 @@ public class MedicineController : ControllerBase
         _service = service;
     }
 
-    [HttpGet("GetAllMedicines")]
-    public async Task<IActionResult> GetAllMeds()
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllMedicines()
     {
         var result = await _service.GetAllMedicinesAsync();
 
         return Ok(result);
     }
 
-    [HttpPost("addnewMedicine")]
-    public async Task<IActionResult> AddNewMed(MedicineDto medicine)
+    [HttpPost("add")]
+    public async Task<IActionResult> AddMedicine(MedicineDto medicine)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -34,15 +34,15 @@ public class MedicineController : ControllerBase
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> SearchMed(string term)
+    public async Task<IActionResult> SearchMedicines(string term)
     {
-        var result = await _service.SearchMedicineAsync(term);
+        var result = await _service.SearchMedicinesAsync(term);
 
         return Ok(result);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Sell(SellMedicineDto request)
+    [HttpPost("sell")]
+    public async Task<IActionResult> SellMedicine(SellMedicineDto request)
     {
         await _service.UpdateMedicineStockAsync(request.MedicineId, request.Quantity);
 

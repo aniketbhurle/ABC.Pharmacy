@@ -33,10 +33,10 @@ public class MedicineService : IMedicineService
         await _repository.AddAsync(medicine);
     }
 
-    public async Task<List<Medicine>> SearchMedicineAsync(string medName)
+    public async Task<List<Medicine>> SearchMedicinesAsync(string medName)
     {
         if (string.IsNullOrWhiteSpace(medName))
-            throw new ArgumentNullException("Null value passed");
+            throw new ArgumentNullException(nameof(medName), "Search term cannot be null or empty.");
 
         var medicines = await _repository.GetAllAsync();
 
@@ -47,25 +47,18 @@ public class MedicineService : IMedicineService
 
     public async Task UpdateMedicineStockAsync(Guid medicineId, int quantityToDeduct)
     {
-        try
-        {
-            if (quantityToDeduct < 0)
-                throw new ArgumentException("Cannot deduct negative quantity");
+        if (quantityToDeduct < 0)
+            throw new ArgumentException("Cannot deduct negative quantity.", nameof(quantityToDeduct));
 
-            var medicine = await _repository.GetByIdAsync(medicineId);
-            if (medicine == null)
-                throw new KeyNotFoundException($"Medicine {medicineId} not found");
+        var medicine = await _repository.GetByIdAsync(medicineId);
+        if (medicine == null)
+            throw new KeyNotFoundException($"Medicine {medicineId} not found.");
 
-            if (medicine.Quantity < quantityToDeduct)
-                throw new InvalidOperationException($"Insufficient stock. Have: {medicine.Quantity}, need: {quantityToDeduct}");
+        if (medicine.Quantity < quantityToDeduct)
+            throw new InvalidOperationException($"Insufficient stock. Available: {medicine.Quantity}, requested: {quantityToDeduct}.");
 
-            medicine.Quantity -= quantityToDeduct;
+        medicine.Quantity -= quantityToDeduct;
 
-            await _repository.UpdateAsync(medicine);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("", ex);
-        }
+        await _repository.UpdateAsync(medicine);
     }
 }
